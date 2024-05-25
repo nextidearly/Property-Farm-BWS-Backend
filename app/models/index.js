@@ -11,6 +11,6 @@ db.holders = require("./holder.model.js")(mongoose);
 db.properties = require("./property.model.js")(mongoose);
 db.inscriptions = require("./inscription.model.js")(mongoose);
 db.propertyIncomes = require("./propertyIncome.model.js")(mongoose);
-db.userIncomes = require("./userIncomes.model.js")(mongoose);
+db.userIncomes = require("./userIncome.model.js")(mongoose);
 
 module.exports = db;

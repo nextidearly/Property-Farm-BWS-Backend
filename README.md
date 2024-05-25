@@ -1,4 +1,4 @@
-# Satoshibet.fun Backend
+# Tokenized Real Estate Share Backend
 
 ## Project setup
 ```

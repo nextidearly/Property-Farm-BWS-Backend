@@ -1,7 +1,7 @@
 {
   "name": "node-express-mongodb",
   "version": "1.0.0",
-  "description": "Satoshi bet",
+  "description": "Tokenized Real Estate Share",
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
