@@ -17,6 +17,7 @@
   "author": "bezkoder",
   "license": "ISC",
   "dependencies": {
+    "@mempool/mempool.js": "^2.3.0",
     "avatars": "^0.9.7",
     "canvas": "^2.11.2",
     "cors": "^2.8.5",

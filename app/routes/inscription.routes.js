@@ -8,8 +8,23 @@ module.exports = (app) => {
   // Retrieve all Inscriptions
   router.get("/", inscriptions.findAll);
 
+  // Retrieve all Inscriptions and group by owner
+  router.get("/owners/group", inscriptions.findAllAndGroupByOwner);
+
   // Retrieve a single Inscription with id
   router.get("/:id", inscriptions.findOne);
+
+  // Retrieve a single Inscription with inscriptionId
+  router.get("/single/:id", inscriptions.findByInscriptionId);
+
+  // Retrieve inscriptions by property
+  router.get("/property/:id", inscriptions.findByProperty);
+
+  // Retrieve inscriptions by property and group by owner
+  router.get("/property/group/:id", inscriptions.findByPropertyAndGroupByOwner);
+
+  // Retrieve inscriptions by address
+  router.get("/owner/:address", inscriptions.findByOwner);
 
   // Update an Inscription with id
   router.put("/:id", inscriptions.update);

@@ -2,15 +2,18 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const http = require("http");
 const WebSocket = require("ws");
-const multer = require("multer");
 const path = require("path");
+const mempoolJS = require("@mempool/mempool.js");
 
 const app = express();
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+const inscriptons = require("./app/controllers/inscription.controller.js");
 
 // Create a set to store connected clients
 const clients = new Set();
@@ -106,12 +109,35 @@ app.get("/", (req, res) => {
 });
 
 require("./app/routes/property.routes")(app);
-require("./app/routes/ordinal.routes")(app);
-require("./app/routes/holder.routes")(app);
-require("./app/routes/user.routes")(app);
+require("./app/routes/inscription.routes")(app);
+require("./app/routes/order.routes")(app);
+require("./app/routes/propertyIncome.routes")(app);
+require("./app/routes/userIncome.routes")(app);
+
+async function listenNewBlock() {
+  const {
+    bitcoin: { websocket },
+  } = mempoolJS({
+    hostname: "mempool.space",
+  });
+
+  const ws = websocket.initServer({
+    options: ["blocks"],
+  });
+
+  ws.on("message", function incoming(data) {
+    const res = JSON.parse(data.toString());
+    if (res.block) {
+      inscriptons.updateHolders();
+      inscriptons.fetchAndAddNewInscriptions();
+    }
+  });
+}
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3006;
+
 server.listen(PORT, () => {
+  listenNewBlock();
   console.log(`Server is running on port ${PORT}.`);
 });
