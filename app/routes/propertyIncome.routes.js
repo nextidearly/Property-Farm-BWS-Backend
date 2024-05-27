@@ -9,6 +9,9 @@ module.exports = (app) => {
   // Retrieve all PropertyIncomes
   router.get("/", propertyIncomes.findAll);
 
+    // Retrieve all PropertyIncomes
+    router.get("/property/:id", propertyIncomes.findAllByProperty);
+
   // Retrieve a single PropertyIncome with id
   router.get("/:id", propertyIncomes.findOne);
 

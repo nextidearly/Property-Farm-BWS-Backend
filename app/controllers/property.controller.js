@@ -1,55 +1,98 @@
 const WebSocket = require("ws");
 const db = require("../models");
 const Property = db.properties;
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Ensure the upload directory exists
+const uploadDir = path.join(__dirname, "./../../property");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir); // Directory where files will be saved
+  },
+  filename: (req, file, cb) => {
+    cb(null, req.body.inscriptionId + ".jpg"); // Append extension to the file
+  },
+});
+
+// File type validation
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif/;
+  const extname = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
+  const mimetype = allowedTypes.test(file.mimetype);
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb(new Error("Error: Images Only!"));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB file size limit
+  fileFilter: fileFilter,
+});
 
 // Create and Save a new Property
 exports.create = async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      supply,
-      price,
-      inscriptionId,
-      sold,
-      imageURL,
-      status,
-      startsIn,
-    } = req.body;
-
-    // Validate request
-    if (!title || !description || !supply || !price || !inscriptionId) {
-      return res
-        .status(400)
-        .json({ message: "All required fields must be provided" });
+  upload.single("file")(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message });
     }
 
-    // Create a new Property
-    const property = new Property({
-      title,
-      description,
-      supply,
-      price,
-      inscriptionId,
-      sold: sold || 0,
-      imageURL,
-      status: status || "active",
-      startsIn: startsIn || "",
-    });
+    try {
+      const {
+        title,
+        description,
+        supply,
+        price,
+        inscriptionId,
+        sold,
+        status,
+        startsIn,
+      } = req.body;
 
-    // Save Property in the database
-    await property.save();
-    res.json({ code: 0, msg: "OK", data: property });
-  } catch (error) {
-    console.error("Error creating property:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+      // Validate request
+      if (!title || !description || !supply || !price || !inscriptionId) {
+        return res
+          .status(400)
+          .json({ message: "All required fields must be provided" });
+      }
+
+      // Create a new Property
+      const property = new Property({
+        title,
+        description,
+        supply,
+        price,
+        inscriptionId,
+        sold: sold || 0,
+        imageURL: req.file ? `/property/${req.file.originalname}` : "",
+        status: status || "active",
+        startsIn: startsIn || Date.now(),
+      });
+
+      // Save Property in the database
+      await property.save();
+      res.json({ code: 0, msg: "OK", data: property });
+    } catch (error) {
+      console.error("Error creating property:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
 };
 
 // Retrieve all Properties
 exports.findAll = async (req, res) => {
   try {
-    const properties = await Property.find();
+    const properties = await Property.find().sort({ updatedAt: -1 });
     res.json({ code: 0, msg: "OK", data: properties });
   } catch (error) {
     console.error("Error retrieving properties:", error);

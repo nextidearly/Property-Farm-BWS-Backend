@@ -1,6 +1,6 @@
+const mongoose = require("mongoose");
 const db = require("../models");
 const PropertyIncome = db.propertyIncomes;
-const Property = db.properties;
 
 // Create and Save a new PropertyIncome
 exports.create = async (req, res) => {
@@ -20,13 +20,11 @@ exports.create = async (req, res) => {
     const data = await propertyIncome.save();
     res.send(data);
   } catch (error) {
-    res
-      .status(500)
-      .send({
-        message:
-          error.message ||
-          "Some error occurred while creating the PropertyIncome.",
-      });
+    res.status(500).send({
+      message:
+        error.message ||
+        "Some error occurred while creating the PropertyIncome.",
+    });
   }
 };
 
@@ -36,13 +34,27 @@ exports.findAll = async (req, res) => {
     const data = await PropertyIncome.find().populate("property");
     res.send(data);
   } catch (error) {
-    res
-      .status(500)
-      .send({
-        message:
-          error.message ||
-          "Some error occurred while retrieving property incomes.",
-      });
+    res.status(500).send({
+      message:
+        error.message ||
+        "Some error occurred while retrieving property incomes.",
+    });
+  }
+};
+
+// Retrieve all PropertyIncomes
+exports.findAllByProperty = async (req, res) => {
+  console.log("asfa", req.params.id);
+  try {
+    const id = req.params.id;
+    const data = await PropertyIncome.find();
+    res.send(data);
+  } catch (error) {
+    res.status(500).send({
+      message:
+        error.message ||
+        "Some error occurred while retrieving property incomes.",
+    });
   }
 };
 
@@ -80,11 +92,9 @@ exports.update = async (req, res) => {
       new: true,
     });
     if (!data)
-      res
-        .status(404)
-        .send({
-          message: `Cannot update PropertyIncome with id=${id}. Maybe PropertyIncome was not found!`,
-        });
+      res.status(404).send({
+        message: `Cannot update PropertyIncome with id=${id}. Maybe PropertyIncome was not found!`,
+      });
     else
       res.send({ message: "PropertyIncome was updated successfully.", data });
   } catch (error) {
@@ -103,11 +113,9 @@ exports.delete = async (req, res) => {
       useFindAndModify: false,
     });
     if (!data)
-      res
-        .status(404)
-        .send({
-          message: `Cannot delete PropertyIncome with id=${id}. Maybe PropertyIncome was not found!`,
-        });
+      res.status(404).send({
+        message: `Cannot delete PropertyIncome with id=${id}. Maybe PropertyIncome was not found!`,
+      });
     else res.send({ message: "PropertyIncome was deleted successfully!" });
   } catch (error) {
     res
@@ -148,8 +156,8 @@ exports.analyzeByProperty = async (req, res) => {
       },
       { $sort: { totalAmount: -1 } }, // Sort by total amount
     ]).lookup({
-      from: "properties",
-      localField: "_id",
+      from: "propertyincomes",
+      localField: "property",
       foreignField: "_id",
       as: "propertyDetails",
     });

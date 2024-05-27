@@ -2,13 +2,11 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const multer = require("multer");
 const http = require("http");
 const WebSocket = require("ws");
-const path = require("path");
 const mempoolJS = require("@mempool/mempool.js");
-
 const app = express();
+const path = require("path");
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
@@ -66,25 +64,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve images from a directory
 app.use("/property", express.static(path.join(__dirname, "property")));
-
-// Setup multer to handle file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Directory where files will be saved
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Append extension to the file
-  },
-});
-
-const upload = multer({ storage });
-
-// File upload endpoint
-app.post("/upload", upload.single("image"), (req, res) => {
-  res
-    .status(200)
-    .json({ message: "Image uploaded successfully", filePath: req.file.path });
-});
 
 const db = require("./app/models");
 db.mongoose.set("strictQuery", false);

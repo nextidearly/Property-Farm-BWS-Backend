@@ -1,24 +1,21 @@
 module.exports = (app) => {
-  const inscriptions = require("../controllers/inscription.controller.js");
+  const properties = require("../controllers/property.controller.js");
   const router = require("express").Router();
 
   // Create a new Inscription
-  router.post("/", inscriptions.create);
+  router.post("/", properties.create);
 
-  // Retrieve all Inscriptions
-  router.get("/", inscriptions.findAll);
+  // Retrieve all properties
+  router.get("/", properties.findAll);
 
-  // Retrieve a single Inscription with id
-  router.get("/:id", inscriptions.findOne);
+  // Retrieve a single propertie with id
+  router.get("/:id", properties.findOne);
 
-  // Update an Inscription with id
-  router.put("/:id", inscriptions.update);
+  // Update an propertie with id
+  router.put("/:id", properties.update);
 
-  // Delete an Inscription with id
-  router.delete("/:id", inscriptions.delete);
+  // Delete an propertieF with id
+  router.delete("/:id", properties.delete);
 
-  // Delete all Inscriptions
-  router.delete("/", inscriptions.deleteAll);
-
-  app.use("/api/inscriptions", router);
+  app.use("/api/properties", router);
 };
