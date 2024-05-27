@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const db = require("../models");
-const PropertyIncome = db.propertyIncomes;
+const PropertyIncome = db.propertyincomes;
 
 // Create and Save a new PropertyIncome
 exports.create = async (req, res) => {
@@ -42,14 +42,22 @@ exports.findAll = async (req, res) => {
   }
 };
 
-// Retrieve all PropertyIncomes
 exports.findAllByProperty = async (req, res) => {
-  console.log("asfa", req.params.id);
   try {
     const id = req.params.id;
-    const data = await PropertyIncome.find();
-    res.send(data);
+    const data = await PropertyIncome.find({
+      property: mongoose.Types.ObjectId(id),
+    }).sort({ updatedAt: -1 });
+
+    if (!data.length) {
+      return res
+        .status(404)
+        .send({ message: "No property incomes found for this property ID" });
+    }
+
+    res.json(data);
   } catch (error) {
+    console.error("Error retrieving property incomes:", error);
     res.status(500).send({
       message:
         error.message ||
