@@ -17,7 +17,6 @@ const inscriptons = require("./app/controllers/inscription.controller.js");
 const clients = new Set();
 
 wss.on("connection", (ws) => {
-  console.log("Client connected");
 
   // Add the connected client to the set
   clients.add(ws);
@@ -50,8 +49,9 @@ wss.on("connection", (ws) => {
 
 global.wss = wss;
 
-var corsOptions = {
+const corsOptions = {
   origin: "*",
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
@@ -107,6 +107,7 @@ async function listenNewBlock() {
   ws.on("message", function incoming(data) {
     const res = JSON.parse(data.toString());
     if (res.block) {
+      console.log("---new block--");
       inscriptons.updateHolders();
       inscriptons.fetchAndAddNewInscriptions();
     }
@@ -117,6 +118,6 @@ async function listenNewBlock() {
 const PORT = process.env.PORT || 3006;
 
 server.listen(PORT, () => {
-  listenNewBlock();
+  listenNewBlock()
   console.log(`Server is running on port ${PORT}.`);
 });

@@ -5,9 +5,8 @@ module.exports = (mongoose) => {
         type: Number,
         required: true,
       },
-      status: {
-        type: Number,
-        default: 1,
+      transactionId: {
+        type: String,
       },
       property: {
         type: mongoose.Schema.Types.ObjectId,

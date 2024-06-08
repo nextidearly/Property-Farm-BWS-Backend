@@ -12,7 +12,7 @@ exports.create = async (req, res) => {
 
   const propertyIncome = new PropertyIncome({
     amount: req.body.amount,
-    status: req.body.status || 1,
+    transactionId: req.body.transactionIds || "",
     property: req.body.property,
   });
 

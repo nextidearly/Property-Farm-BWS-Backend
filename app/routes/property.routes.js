@@ -8,6 +8,12 @@ module.exports = (app) => {
   // Retrieve all properties
   router.get("/", properties.findAll);
 
+  // Retrieve all live properties
+  router.get("/live", properties.findAllLives);
+
+  // Retrieve all past properties
+  router.get("/past", properties.findAllPasts);
+
   // Retrieve a single propertie with id
   router.get("/:id", properties.findOne);
 

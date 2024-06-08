@@ -3,6 +3,9 @@ const db = require("../models");
 const Inscription = db.inscriptions;
 const Order = db.orders;
 
+const propertyController = require("./property.controller.js");
+
+
 // Function to process pending mint requests
 const processMintQueue = async (mintQueue) => {
   try {
@@ -66,7 +69,6 @@ const processMintQueue = async (mintQueue) => {
         }
 
         if (orderData.data.status === "closed") {
-          console.log("closed");
           await updateOrderStatus(orderId, orderData.data);
           processNext();
           return;
@@ -78,6 +80,9 @@ const processMintQueue = async (mintQueue) => {
           processNext();
           return;
         }
+
+        processNext();
+        return;
       } catch (error) {
         console.log("Api is crashed, Checking again in 10 seconds.", error);
         setTimeout(checkStatus, 10000);
@@ -113,7 +118,7 @@ const processMintQueue = async (mintQueue) => {
         const newHolder = await holder.save();
         console.log("saved: ", newHolder._id);
       }
-
+      await propertyController.updateForSold(property, data.files.length)
       await updateOrderStatus(data.orderId, data);
     };
 
@@ -148,8 +153,7 @@ exports.updateHolders = async () => {
     ) => {
       try {
         const res = await fetch(
-          `${
-            process.env.ORD_SERVER || "http://0.0.0.0:80"
+          `${process.env.ORD_SERVER || "http://0.0.0.0:80"
           }/inscription/${inscriptionId}`,
           {
             method: "GET",
@@ -160,24 +164,21 @@ exports.updateHolders = async () => {
         );
         const inscriptionData = await res.json();
 
+        inscriptionData.address !== originalOwner
         if (inscriptionData.address !== originalOwner) {
-          const updated = await Inscription.findByIdAndUpdate(_id, req.body, {
+          const updated = await Inscription.findByIdAndUpdate(_id, { owner: inscriptionData.address }, {
             useFindAndModify: false,
             new: true,
           });
-
           if (updated) {
-            console.log("updated", inscriptionId);
+            console.log(inscriptionData.address !== originalOwner);
           }
         } else {
-          console.log(
-            "--the same address--",
-            inscriptionData.address,
-            originalOwner
-          );
+
         }
       } catch (error) {
         if (retryCount < 3) {
+          console.log(error);
           await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay between retries (1 seconds)
           await fetchDataWithRetries(
             inscriptionId,
@@ -186,9 +187,7 @@ exports.updateHolders = async () => {
             retryCount + 1
           );
         } else {
-          console.error(
-            `Max retries reached for inscription ID ${inscriptionId}. Skipping.`
-          );
+
         }
       }
     };
@@ -305,6 +304,7 @@ exports.findByProperty = async (req, res) => {
 };
 
 // Find a inscriptions by property
+// Find inscriptions by property and group by owner, sorted by amount
 exports.findByPropertyAndGroupByOwner = async (req, res) => {
   try {
     const id = req.params.id;
@@ -325,9 +325,12 @@ exports.findByPropertyAndGroupByOwner = async (req, res) => {
           amount: 1,
         },
       },
+      {
+        $sort: { amount: -1 }, // Sort by amount in descending order
+      },
     ]);
 
-    if (!data) {
+    if (!data.length) {
       return res
         .status(404)
         .send({ message: "Not found Inscription with id " + id });
@@ -339,6 +342,7 @@ exports.findByPropertyAndGroupByOwner = async (req, res) => {
     });
   }
 };
+
 
 // Find all inscriptions and group by owner
 exports.findAllAndGroupByOwner = async (req, res) => {
